@@ -1,0 +1,85 @@
+---
+title: "Assignment 2 - Netflix Movies"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+A business analyst at Netflix is interested in optimising the assignment of advertising to various TV shows and movies. In a particular project, the analyst wants to determine if there are any differences in the lengths of movies with different age ratings as determined by the Motion Picture Association of America (MPAA), and to quantify any differences detected. The lengths of 20 randomly selected movies with each rating was collected for this analysis.
+
+The variables measured were:
+
+variable | description
+---------|----------------
+ length  | length of the movie, in minutes
+ rating  | rating of the movie, either G, PG, PG-13 or R
+
+```{r}
+library(s20x)
+movies.df = read.table('movies.txt', header = TRUE)
+movies.df$rating = factor(movies.df$rating)
+head(movies.df)
+```
+
+```{r}
+boxplot(length ~ rating, data = movies.df)
+summaryStats(length ~ rating, movies.df)
+```
+
+**Explanatory Analysis**
+
+The box plot for lengths vs rating (G) has a centre of 81.5 mins, a spread between 72 and 128, and a roughly symmetrical skew with two outliers
+
+The box plot for lengths vs rating (PG) has a centre of 93.0 mins, a spread between 62 and 118, and a symmetrical skew.
+
+The box plot for lengths vs rating (PG-13) has a centre of 111.5 mins, a spread between 82 and 201, and a slightly right skew with one outlier.
+
+The box plot for lengths vs rating (R) has a centre of 101.5 mins, a spread between 83 and 145, and a roughly symmetrical skew with two outliers.
+
+```{r}
+movies.fit1 = lm(length ~ rating, data = movies.df)
+modcheck(movies.fit1)
+```
+```{r}
+movies.fit2 = lm(log(length) ~ rating, data = movies.df)
+modcheck(movies.fit2)
+```
+```{r}
+summary(movies.fit2)
+```
+```{r}
+anova(movies.fit2)
+```
+```{r}
+multipleComp(movies.fit2)
+```
+```{r}
+exp(-1 * multipleComp(movies.fit2)[, 1:3])
+```
+**Methods and Assumption Checks**
+
+We have a numerical measurement made on four groups, so we should use a one-way ANOVA / linear regression model.
+
+We assume that the observations are independent. The equality of variance of the first model appears to be satisfied. The Normality assumption of the first model is not satisfied, as the data appears to be right-skewed. We can still apply the Central Limit Theorem to attain a valid estimate for the mean as we have a total sample of n = 80 > 30. For skewed data however, the median is probably a better measure of centrality than the mean. This suggests a multiplicative relationship, so we apply a log transformation. After the log transformation, the Normality assumption appear to be satisfied. There does not appear to be any unduly influential observations. 
+
+The model fitted is $\log({\tt length})_{i} = \beta_0 + \beta_1 \times {\tt rating}_{\text{PG}, i} + \beta_2 \times {\tt rating}_{\text{PG-13}, i} + \beta_3 \times {\tt rating}_{\text{R}, i} + \varepsilon_{i}$ where ${\tt rating}_{\text{PG}, i}$, ${\tt rating}_{\text{PG-13}, i}$ and ${\tt rating}_{\text{R}, i} = 1$ if the age rating for observation $i$ is PG, PG-13, and R respectively, and 0 otherwise, and $\varepsilon_i \sim iid~ N(0, \sigma^2)$. The baseline has rating G.
+
+Alternatively, the model can be described as $\log({\tt length})_{ij} = \mu + \alpha_i + \varepsilon_{ij}$, where $\mu$ is the mean log length of the movie, $\alpha_i$ is the effect of selecting each age rating and $\varepsilon_{ij} \sim iid~ N(0, \sigma^2)$.
+
+**Executive Summary**
+
+The lengths of movies with 4 different age ratings as determined by the Motion Picture Association of America (MPAA) was collected by a business analyst at Netflix. It is of interest to compare and quantify the differences in movie lengths for each of the 4 age ratings.
+
+In order to perform the analysis, we had to transform the data. As a result our findings on the lengths of movies with 4 different age ratings relate to medians and are in multiplicative terms.
+
+There is no evidence of a difference between the median lengths of movies with an age rating of R and PG, PG-13 respectively. A similar case is also valid for movies with an age rating of PG and G.
+
+We have observed that the median lengths of movies with an age rating of PG-13 is longer than movies with age ratings of PG and G respectively. The median length of movies with an age rating of R is also observed to be longer than movies with an age rating of G.
+
+We estimate that the median movie lengths with an age rating of PG-13 is between 1.06 to 1.38 times longer than movies with an age rating of PG, and between 1.15 and 1.51 times longer than movies with an age rating of G. We also estimate that the median movie lengths with an age rating of R is between 1.05 to 1.37 times longer than movies with an age rating of G.
+
+Our model explains 30% of the variation in the movie lengths for each age rating.

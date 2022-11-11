@@ -1,0 +1,68 @@
+---
+title: "Assignment 2 - Pavement Conditions"
+output:
+  html_document:
+    df_print: paged
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+The quality of a road surface (pavement) deteriorates over time due to wear-and-tear and environmental conditions. It is of interest to quantify how much a pavement deteriorates in a year, on average, in order to inform plans on pavement resurfacing. It is also of interest to estimate the pavement condition index for an individual pavement section that is 15 years old.
+
+The variables measured were:
+
+variable | description
+---------|----------------
+   Age   | age of the pavement section, in years
+   PCI   | pavement condition index, a composite measure of surface                                   deterioration, a higher measure means the pavement is in better condition
+
+```{r}
+library(s20x)
+pavementConds.df = read.table('PavementConds.txt', header = TRUE)
+plot(PCI ~ Age, main = "Pavement Condition Index vs Pavement Section", data = pavementConds.df)
+trendscatter(PCI ~ Age, data = pavementConds.df)
+```
+**Explanatory Analysis**
+
+This scatter plot has a weak, negative, linear association.
+
+```{r}
+pavement.fit = lm(PCI ~ Age, data = pavementConds.df)
+plot(pavement.fit, which = 1)
+```
+```{r}
+normcheck(pavement.fit)
+```
+```{r}
+cooks20x(pavement.fit)
+``` 
+```{r}
+summary(pavement.fit)
+```
+```{r}
+confint(pavement.fit)
+```
+```{r}
+predPCI.df = data.frame(Age = c(15))
+predict(pavement.fit, predPCI.df, interval = "prediction")
+```
+**Method and Assumption Checks**
+
+A scatter plot of PCI vs Age showed a relatively (negative) linear association with approximately constant scatter and so a linear model was fitted. 
+
+The observations appear to be independent. The equality of variance and Normality assumptions all appear to be met. There were no unduly influential points.
+
+Our final model is  ${\tt PCI}_i=\beta_0 +\beta_1\times {\tt Age}_i+\varepsilon_i$ where $\varepsilon_i \sim iid~  N(0,\sigma^2)$.
+
+**Executive Summary**
+
+We have data on the age of a road surface (pavement section) and the quality of of said road surface as PCI (pavement condition index), a composite measure of surface deterioration. It is of interest to predict / quantify the PCI of a pavement using the age of said pavement in order to inform plans on pavement resurfacing.
+
+We find that the older the individual pavement section is, the more worse the condition of the pavement will be (the lower the pavement condition index is).
+
+We estimate that if the pavement is of good to satisfactory condition, the mean pavement condition index will be between 75.5 and 105.3 units. We estimate that for each additional year, the mean pavement condition index decreases by between 1.1 and 3.2 units.
+
+Our model explains 37% of the variation in the pavement condition index of each pavement.
+
+Using our model, we predict that the 15 year old individual pavement section will have a pavement condition index between 45.0 and 70.6 units.

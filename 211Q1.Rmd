@@ -1,0 +1,56 @@
+---
+title: "Assignment 2 - Tyre Wear"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+A tyre manufacturer has created a new material formulation that reduces tyre wear (and hence allow the tyres to be used for longer). An experiment was conducted to measure the difference in tyre wear between the new material formulation and the old one – an old and a new tyre each was installed in the rear of twenty cars, and the distance until each tyre wore out was recorded. We are interested in finding whether there is a difference in the wear-out distance, and to quantify that difference if there is one.
+
+The variables measured were:
+
+  variable  |  description
+------------|----------------
+    Car     | identifier of car, 1, ..., 20
+DistanceNew | wear-out distance for new design tyre in a particular                  car, in thousands of km
+DistanceOld | wear-out distance for old design tyre in a particular                  car, in thousands of km
+
+```{r}
+library(s20x)
+tyreDistance.df = read.table('tyredistance.txt', header = TRUE)
+diffDistance = tyreDistance.df$DistanceNew - tyreDistance.df$DistanceOld
+summaryStats(diffDistance) 
+```
+```{r}
+boxplot(diffDistance)
+```
+**Exploratory Analysis**
+
+The centre of this box plot is at 1500km, the spread is between -33000km and 54000km and there is a slight right skew.
+
+```{r}
+normcheck(diffDistance)
+```
+
+```{r}
+t.test(diffDistance)
+```
+**Methods and Assumption Checks**
+
+We wish to estimate the difference in the wear-out distance between an old and new tyre installed in the rear of same cars, so we carry out a paired-sample analysis.
+
+The wear tests for each car should be independent of one another. The equality of variance and Normality assumptions looks to be satisfied (but there seems to be slight evidence of right skewness). 
+
+The model fitted is ${\tt diffDistance}_i = \mu_{\text{diff}} + \varepsilon_i$, where $\mu_{\text{diff}}$ is the mean difference in wear-out distance between the old and new tyre for each car, and $\varepsilon_i \sim iid~ N(0, \sigma^2)$.
+
+**Executive Summary**
+
+We are interested in determining whether there is a difference in the wear-out distance between a new design tyre and old design tyre when installed in the rear of cars.
+
+Since our data involved two related measurements on each car (the wear-out distance for the old and new tyre), the difference between the two wear-out distances for each car has been analysed.
+
+From our data, we can conclude that there is no evidence of a difference between the mean wear-out distance for the new design tyre and the old design tyre. Therefore the difference in wear-out distance between the two tyre designs is insignificant.  
